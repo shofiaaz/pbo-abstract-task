@@ -1,0 +1,291 @@
+using System;
+using System.Collections.Generic;
+
+// Interface untuk kemampuan
+public interface IKemampuan
+{
+    void GunakanKemampuan(Robot target);
+}
+
+// Abstract class Robot yang mendefinisikan fungsi umum
+public abstract class Robot
+{
+    public string Nama { get; set; }
+    public int Energi { get; set; }
+    public int Armor { get; set; }
+    public int Serangan { get; set; }
+
+    protected Robot(string nama, int energi, int armor, int serangan)
+    {
+        Nama = nama;
+        Energi = energi;
+        Armor = armor;
+        Serangan = serangan;
+    }
+
+    public void Serang(Robot target)
+    {
+        if (Energi > 0)
+        {
+            int damage = Serangan - target.Armor;
+            if (damage > 0)
+            {
+                target.Energi -= damage;
+                Console.WriteLine($"{Nama} menyerang {target.Nama} dan menyebabkan {damage} kerusakan.");
+            }
+            else
+            {
+                Console.WriteLine($"{target.Nama} berhasil menahan serangan dari {Nama}.");
+            }
+        }
+        else
+        {
+            Console.WriteLine($"{Nama} tidak memiliki energi untuk menyerang.");
+        }
+    }
+
+    // Abstraksi untuk penggunaan kemampuan
+    public abstract void GunakanKemampuan(IKemampuan kemampuan);
+
+    public void CetakInformasi()
+    {
+        Console.WriteLine($"Nama: {Nama}, Energi: {Energi}, Armor: {Armor}, Serangan: {Serangan}");
+    }
+
+    // Aturan permainan: Pulihkan energi setiap akhir giliran
+    public void PulihkanEnergi()
+    {
+        Energi += 10; // Pulihkan energi setiap giliran
+        Console.WriteLine($"{Nama} memulihkan energi. Energi sekarang: {Energi}");
+    }
+}
+
+// Kelas BosRobot sebagai turunan dari Robot dengan kekuatan yang lebih besar
+public class BosRobot : Robot
+{
+    public int Pertahanan { get; set; }
+
+    public BosRobot(string nama, int energi, int armor, int serangan, int pertahanan) 
+        : base(nama, energi, armor, serangan)
+    {
+        Pertahanan = pertahanan;
+        Armor += Pertahanan; // Tambahkan pertahanan ke armor
+    }
+
+    public override void GunakanKemampuan(IKemampuan kemampuan)
+    {
+        kemampuan.GunakanKemampuan(this);
+    }
+
+    public void Mati()
+    {
+        Console.WriteLine($"{Nama} telah mati.");
+    }
+}
+
+// Kelas Robot Cepat sebagai jenis robot baru dengan kecepatan serangan tinggi
+public class RobotCepat : Robot
+{
+    public RobotCepat(string nama, int energi, int armor, int serangan) 
+        : base(nama, energi, armor, serangan) {}
+
+    public override void GunakanKemampuan(IKemampuan kemampuan)
+    {
+        kemampuan.GunakanKemampuan(this);
+    }
+
+    // Robot cepat memiliki kemampuan menyerang dua kali dalam satu giliran
+    public void SerangDuaKali(Robot target)
+    {
+        Console.WriteLine($"{Nama} menyerang dua kali!");
+        Serang(target);
+        Serang(target);
+    }
+}
+
+// Kemampuan Perbaikan
+public class Perbaikan : IKemampuan
+{
+    private const int Cooldown = 3;
+    private int sisaCooldown;
+
+    public Perbaikan()
+    {
+        sisaCooldown = 0;
+    }
+
+    public void GunakanKemampuan(Robot target)
+    {
+        if (sisaCooldown == 0)
+        {
+            target.Energi += 20;
+            sisaCooldown = Cooldown;
+            Console.WriteLine($"{target.Nama} menggunakan kemampuan Perbaikan dan memulihkan 20 energi.");
+        }
+        else
+        {
+            Console.WriteLine($"Kemampuan Perbaikan sedang cooldown. Sisa cooldown: {sisaCooldown}");
+        }
+
+        if (sisaCooldown > 0) sisaCooldown--;
+    }
+}
+
+// Kemampuan Serangan Listrik
+public class ElectricShock : IKemampuan
+{
+    private const int Cooldown = 2;
+    private int sisaCooldown;
+
+    public ElectricShock()
+    {
+        sisaCooldown = 0;
+    }
+
+    public void GunakanKemampuan(Robot target)
+    {
+        if (sisaCooldown == 0)
+        {
+            target.Energi -= 15;
+            sisaCooldown = Cooldown;
+            Console.WriteLine($"{target.Nama} terkena Electric Shock dan kehilangan 15 energi.");
+        }
+        else
+        {
+            Console.WriteLine($"Electric Shock sedang cooldown. Sisa cooldown: {sisaCooldown}");
+        }
+
+        if (sisaCooldown > 0) sisaCooldown--;
+    }
+}
+
+// Kemampuan Serangan Plasma
+public class PlasmaCannon : IKemampuan
+{
+    private const int Cooldown = 4;
+    private int sisaCooldown;
+
+    public PlasmaCannon()
+    {
+        sisaCooldown = 0;
+    }
+
+    public void GunakanKemampuan(Robot target)
+    {
+        if (sisaCooldown == 0)
+        {
+            int damage = 30;
+            target.Energi -= damage;
+            sisaCooldown = Cooldown;
+            Console.WriteLine($"{target.Nama} terkena Serangan Plasma dan kehilangan {damage} energi.");
+        }
+        else
+        {
+            Console.WriteLine($"Plasma Cannon sedang cooldown. Sisa cooldown: {sisaCooldown}");
+        }
+
+        if (sisaCooldown > 0) sisaCooldown--;
+    }
+}
+
+// Kemampuan Pertahanan Super
+public class SuperShield : IKemampuan
+{
+    private const int Cooldown = 5;
+    private int sisaCooldown;
+
+    public SuperShield()
+    {
+        sisaCooldown = 0;
+    }
+
+    public void GunakanKemampuan(Robot target)
+    {
+        if (sisaCooldown == 0)
+        {
+            target.Armor += 20;
+            sisaCooldown = Cooldown;
+            Console.WriteLine($"{target.Nama} menggunakan Super Shield dan mendapatkan tambahan 20 armor sementara.");
+        }
+        else
+        {
+            Console.WriteLine($"Super Shield sedang cooldown. Sisa cooldown: {sisaCooldown}");
+        }
+
+        if (sisaCooldown > 0) sisaCooldown--;
+    }
+}
+
+// Kelas untuk Robot biasa sebagai implementasi umum dari Robot
+public class RobotBiasa : Robot
+{
+    public RobotBiasa(string nama, int energi, int armor, int serangan) 
+        : base(nama, energi, armor, serangan) {}
+
+    public override void GunakanKemampuan(IKemampuan kemampuan)
+    {
+        kemampuan.GunakanKemampuan(this);
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        // Membuat beberapa jenis robot dengan kemampuan unik
+        Robot robot1 = new RobotBiasa("Robot Biasa", 100, 10, 20);
+        Robot robotCepat = new RobotCepat("Robot Cepat", 80, 8, 15);
+        Robot bosRobot = new BosRobot("Bos Robot", 150, 20, 30, 10);
+
+        IKemampuan perbaikan = new Perbaikan();
+        IKemampuan listrik = new ElectricShock();
+        IKemampuan plasma = new PlasmaCannon();
+        IKemampuan shield = new SuperShield();
+
+        // Cetak informasi awal
+        Console.WriteLine("===== Informasi Robot Awal =====");
+        robot1.CetakInformasi();
+        robotCepat.CetakInformasi();
+        bosRobot.CetakInformasi();
+        Console.WriteLine();
+
+        // Simulasi permainan dengan serangan dan penggunaan kemampuan
+        Console.WriteLine("===== Simulasi Pertarungan =====");
+
+        robot1.Serang(bosRobot);
+        Console.WriteLine();
+
+        bosRobot.GunakanKemampuan(perbaikan);
+        Console.WriteLine();
+
+        // Pastikan robotCepat adalah RobotCepat sebelum memanggil SerangDuaKali
+        if (robotCepat is RobotCepat rc)
+        {
+            rc.SerangDuaKali(bosRobot);
+        }
+        Console.WriteLine();
+
+        bosRobot.GunakanKemampuan(shield);
+        Console.WriteLine();
+
+        bosRobot.GunakanKemampuan(plasma);
+        Console.WriteLine();
+
+        robot1.GunakanKemampuan(listrik);
+        Console.WriteLine();
+
+        // Pulihkan energi di akhir giliran
+        Console.WriteLine("===== Pemulihan Energi =====");
+        robot1.PulihkanEnergi();
+        bosRobot.PulihkanEnergi();
+        Console.WriteLine();
+
+        // Cetak informasi setelah serangan
+        Console.WriteLine("===== Informasi Robot Setelah Pertarungan =====");
+        robot1.CetakInformasi();
+        robotCepat.CetakInformasi();
+        bosRobot.CetakInformasi();
+
+        Console.ReadKey();
+    }
+}
